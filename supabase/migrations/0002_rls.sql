@@ -34,10 +34,18 @@ alter table public.audit_logs enable row level security;
 -- ---------- admin_users: a signed-in admin can read own row; only owners manage rows ----------
 create policy "admin_users: self read" on public.admin_users
   for select to authenticated using (user_id = auth.uid() or public.is_admin());
+-- is_owner() is SECURITY DEFINER (see 0005) so the policy never queries admin_users recursively.
+create or replace function public.is_owner()
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.admin_users a
+    where a.user_id = auth.uid() and a.is_active and a.role = 'owner'
+  );
+$$;
+revoke all on function public.is_owner() from public;
+grant execute on function public.is_owner() to authenticated, anon;
 create policy "admin_users: owner manage" on public.admin_users
-  for all to authenticated
-  using (exists (select 1 from public.admin_users o where o.user_id = auth.uid() and o.is_active and o.role = 'owner'))
-  with check (exists (select 1 from public.admin_users o where o.user_id = auth.uid() and o.is_active and o.role = 'owner'));
+  for all to authenticated using (public.is_owner()) with check (public.is_owner());
 
 -- ---------- public catalog (read for everyone, write for admin) ----------
 create policy "categories: public read" on public.categories

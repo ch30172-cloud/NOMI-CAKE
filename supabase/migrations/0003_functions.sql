@@ -434,7 +434,7 @@ begin
     ),
     'busy_days', (
       select coalesce(jsonb_agg(b), '[]'::jsonb) from (
-        select d.date, public.capacity_used(d.date) as used, public.capacity_limit(d.date) as "limit"
+        select d.date::date as date, public.capacity_used(d.date::date) as used, public.capacity_limit(d.date::date) as "limit"
         from generate_series(today, today + 14, interval '1 day') as d(date)
       ) b where b.used >= b."limit" * 0.8 and b."limit" > 0
     )

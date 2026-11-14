@@ -93,7 +93,11 @@ npm run lint
 Integration/E2E tests for the full order flow need a live Supabase project. Suggested approach:
 Playwright against `npm run dev` with a dedicated test project and the migrations applied.
 
-## 9. Deploy to Vercel
+## 9. Deploy (Netlify or Vercel)
+
+Live demo: https://nomi-nebentzhal-cakes.netlify.app (Netlify, free tier). `netlify.toml` + `@netlify/plugin-nextjs` are configured; deploy with `npx netlify-cli deploy --build --prod`. Note: Netlify has no cron for `/api/cron/notifications`; emails are still sent immediately after each order, and the cron route can be pinged by any external scheduler with the `CRON_SECRET`.
+
+### Vercel alternative
 
 1. Push the repo to GitHub and import it in Vercel.
 2. Add all variables from `.env.example` (set `NEXT_PUBLIC_SITE_URL` to the production URL).

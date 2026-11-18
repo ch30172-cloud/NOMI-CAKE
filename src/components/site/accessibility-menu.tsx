@@ -89,7 +89,8 @@ export function AccessibilityMenu() {
   ];
 
   return (
-    <div className="a11y-root fixed bottom-4 start-4 z-50 print:hidden">
+    // Bottom-LEFT in both languages: the hosting badge occupies the bottom-right corner.
+    <div className="a11y-root fixed bottom-4 left-4 z-[2147483647] print:hidden">
       {open && (
         <div
           ref={panelRef}

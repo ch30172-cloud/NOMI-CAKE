@@ -62,7 +62,11 @@
     "backToCatalog": "חזרה לקטלוג",
     "lineTotal": "סה״כ לפריט",
     "decrease": "הפחתת כמות",
-    "increase": "הוספת כמות"
+    "increase": "הוספת כמות",
+    "prevImage": "התמונה הקודמת",
+    "nextImage": "התמונה הבאה",
+    "imageOf": "תמונה {n} מתוך {total}",
+    "thumbnails": "כל התמונות"
   },
   "cart": {
     "title": "סל הקניות",

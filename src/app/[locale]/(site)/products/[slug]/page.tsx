@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { ImageCarousel } from "@/components/site/image-carousel";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
@@ -39,34 +39,13 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
         <Arrow className="size-4" aria-hidden /> {t("backToCatalog")}
       </Link>
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="space-y-3">
-          <div className="relative aspect-square overflow-hidden rounded-3xl bg-blush/40">
-            {product.product_images[0] ? (
-              <Image
-                src={product.product_images[0].url}
-                alt={localized(product.product_images[0], "alt", currentLocale) || name}
-                fill
-                priority
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
-                unoptimized={!product.product_images[0].url.startsWith("/")}
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-7xl" aria-hidden>
-                🎂
-              </div>
-            )}
-          </div>
-          {product.product_images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {product.product_images.slice(1, 5).map((img) => (
-                <div key={img.id} className="relative aspect-square overflow-hidden rounded-xl bg-blush/40">
-                  <Image src={img.url} alt={localized(img, "alt", currentLocale) || name} fill sizes="25vw" className="object-cover" unoptimized={!img.url.startsWith("/")} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ImageCarousel
+          variant="full"
+          priority
+          label={name}
+          sizes="(max-width: 768px) 100vw, 50vw"
+          images={product.product_images.map((img) => ({ url: img.url, alt: localized(img, "alt", currentLocale) || name }))}
+        />
 
         <div>
           <div className="mb-2 flex flex-wrap gap-2">

@@ -62,7 +62,11 @@
     "backToCatalog": "Back to catalog",
     "lineTotal": "Item total",
     "decrease": "Decrease quantity",
-    "increase": "Increase quantity"
+    "increase": "Increase quantity",
+    "prevImage": "Previous photo",
+    "nextImage": "Next photo",
+    "imageOf": "Photo {n} of {total}",
+    "thumbnails": "All photos"
   },
   "cart": {
     "title": "Your cart",

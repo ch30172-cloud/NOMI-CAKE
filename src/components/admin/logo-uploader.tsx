@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ActionForm } from "@/components/admin/action-form";
 import { SubmitButton } from "@/components/admin/submit-button";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ImageFileInput } from "@/components/admin/image-file-input";
 import { resetLogo, uploadLogo } from "@/lib/admin/settings-actions";
 
 export function LogoUploader({ hasCustomLogo }: { hasCustomLogo: boolean }) {
@@ -15,7 +15,7 @@ export function LogoUploader({ hasCustomLogo }: { hasCustomLogo: boolean }) {
       <ActionForm action={uploadLogo} className="flex gap-2" resetOnSuccess>
         {() => (
           <>
-            <Input type="file" name="logo" accept="image/*" required className="text-xs" />
+            <ImageFileInput name="logo" required className="text-xs" />
             <SubmitButton size="sm">החלפה</SubmitButton>
           </>
         )}

@@ -17,6 +17,10 @@ const host = supabaseHost();
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Photos are shrunk in the browser first; this leaves headroom for larger PNGs.
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   images: {
     remotePatterns: host
       ? [{ protocol: "https", hostname: host, pathname: "/storage/v1/object/public/**" }]

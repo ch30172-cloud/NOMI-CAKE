@@ -16,6 +16,7 @@ import { useCartQuote } from "./use-cart-quote";
 export function CartView() {
   const t = useTranslations("cart");
   const tc = useTranslations("catalog");
+  const tp = useTranslations("product");
   const locale = useLocale();
   const { items, hydrated, updateQuantity, updateNotes, removeItem, couponCode, setCoupon } = useCart();
   const { quote, loading } = useCartQuote(null);
@@ -63,11 +64,11 @@ export function CartView() {
                 {line?.error && <p className="text-sm text-destructive">{t("itemUnavailable")}</p>}
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="inline-flex items-center rounded-full border border-rose/40 bg-white">
-                    <button type="button" className="px-2 py-1" aria-label="-" onClick={() => updateQuantity(item.key, item.quantity - 1)}>
+                    <button type="button" className="px-2 py-1" aria-label={tp("decrease")} onClick={() => updateQuantity(item.key, item.quantity - 1)}>
                       <Minus className="size-4" />
                     </button>
                     <span className="w-8 text-center text-sm">{item.quantity}</span>
-                    <button type="button" className="px-2 py-1" aria-label="+" onClick={() => updateQuantity(item.key, item.quantity + 1)}>
+                    <button type="button" className="px-2 py-1" aria-label={tp("increase")} onClick={() => updateQuantity(item.key, item.quantity + 1)}>
                       <Plus className="size-4" />
                     </button>
                   </div>

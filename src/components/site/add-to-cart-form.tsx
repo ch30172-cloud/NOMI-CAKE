@@ -124,7 +124,7 @@ export function AddToCartForm({ product, variants }: { product: ProductInput; va
       <div>
         <Label className="mb-2 block">{t("quantity")}</Label>
         <div className="inline-flex items-center rounded-full border border-rose/40 bg-white">
-          <button type="button" className="px-3 py-2" aria-label="-" onClick={() => setQuantity((q) => Math.max(product.min_quantity, q - 1))}>
+          <button type="button" className="px-3 py-2" aria-label={t("decrease")} onClick={() => setQuantity((q) => Math.max(product.min_quantity, q - 1))}>
             <Minus className="size-4" />
           </button>
           <input
@@ -140,7 +140,7 @@ export function AddToCartForm({ product, variants }: { product: ProductInput; va
           <button
             type="button"
             className="px-3 py-2"
-            aria-label="+"
+            aria-label={t("increase")}
             onClick={() => setQuantity((q) => (product.max_quantity ? Math.min(product.max_quantity, q + 1) : q + 1))}
           >
             <Plus className="size-4" />

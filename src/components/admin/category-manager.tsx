@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ActionForm } from "@/components/admin/action-form";
+import { ImageFileInput } from "@/components/admin/image-file-input";
 import { SubmitButton } from "@/components/admin/submit-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -74,7 +75,7 @@ export function CategoryManager({ categories }: { categories: CategoryRow[] }) {
                     )}
                     <div>
                       <Label htmlFor="image">תמונה</Label>
-                      <Input id="image" name="image" type="file" accept="image/*" />
+                      <ImageFileInput id="image" name="image" />
                     </div>
                     <div className="flex items-center gap-2">
                       <Switch id="is_active" name="is_active" defaultChecked={c?.is_active ?? true} />

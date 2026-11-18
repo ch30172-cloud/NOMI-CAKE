@@ -63,6 +63,9 @@ export async function SiteFooter({ settings, logoUrl }: { settings: BusinessSett
           <Link href="/privacy" className="block text-muted-foreground hover:text-accent">
             {t("privacy")}
           </Link>
+          <Link href="/accessibility" className="block text-muted-foreground hover:text-accent">
+            {t("accessibility")}
+          </Link>
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} {name}. {t("rights")}.
           </p>

@@ -60,7 +60,9 @@
     "addToCart": "Add to cart",
     "unavailable": "This product is currently unavailable",
     "backToCatalog": "Back to catalog",
-    "lineTotal": "Item total"
+    "lineTotal": "Item total",
+    "decrease": "Decrease quantity",
+    "increase": "Increase quantity"
   },
   "cart": {
     "title": "Your cart",
@@ -105,7 +107,13 @@
     "chooseDate": "Choose a date",
     "chooseTime": "Choose a time",
     "noSlots": "No available times on this date.",
-    "dateReasons": { "too_soon": "Too soon", "too_far": "Too far", "closed": "Closed", "blocked": "Unavailable", "full": "Full" },
+    "dateReasons": {
+      "too_soon": "Too soon",
+      "too_far": "Too far",
+      "closed": "Closed",
+      "blocked": "Unavailable",
+      "full": "Full"
+    },
     "leadNote": "Orders must be placed at least {days} days in advance.",
     "fullName": "Full name",
     "phone": "Phone",
@@ -174,7 +182,8 @@
   "footer": {
     "rights": "All rights reserved",
     "privacy": "Privacy policy",
-    "followUs": "Follow us"
+    "followUs": "Follow us",
+    "accessibility": "Accessibility statement"
   },
   "common": {
     "loading": "Loading...",
@@ -228,5 +237,42 @@
       "logout": "Sign out",
       "viewSite": "View site"
     }
+  },
+  "a11y": {
+    "skipToContent": "Skip to main content",
+    "open": "Open accessibility menu",
+    "close": "Close accessibility menu",
+    "title": "Accessibility menu",
+    "fontSize": "Text size",
+    "smaller": "Smaller text",
+    "bigger": "Larger text",
+    "contrast": "High contrast",
+    "grayscale": "Grayscale",
+    "links": "Highlight links",
+    "readable": "Readable font",
+    "noMotion": "Stop animations",
+    "bigCursor": "Large cursor",
+    "reset": "Reset settings",
+    "statement": "Accessibility statement",
+    "statementTitle": "Accessibility statement",
+    "intro": "{name} is committed to providing equal service to all customers, including people with disabilities. We have made efforts to keep this website clear, convenient and accessible.",
+    "standardTitle": "Accessibility level",
+    "standard": "The website was made accessible according to the Israeli Equal Rights for Persons with Disabilities regulations (2013) and Israeli Standard IS 5568, based on WCAG 2.0 level AA, as far as possible.",
+    "featuresTitle": "What we did",
+    "features": [
+      "An accessibility menu on every page: larger text, high contrast, grayscale, highlighted links, readable font, stop animations and large cursor",
+      "A \"Skip to main content\" link at the top of every page",
+      "Full keyboard navigation with a clearly visible focus indicator",
+      "Screen reader support: image descriptions, labels for fields and buttons, and page language and direction",
+      "Full support for Hebrew (right-to-left) and English (left-to-right)",
+      "Responsive on phones, tablets and computers, respecting the device \"reduce motion\" setting"
+    ],
+    "limitsTitle": "Limitations",
+    "limits": "Despite our efforts, some parts of the site may not yet be fully accessible, for example recently uploaded images or content. We keep reviewing and improving accessibility.",
+    "contactTitle": "Accessibility contact",
+    "contact": "Had any difficulty? We will be glad to help. You can contact us, and you can also order by phone or WhatsApp:",
+    "phone": "Phone / WhatsApp",
+    "email": "Email",
+    "updated": "Statement last updated on {date}"
   }
 }

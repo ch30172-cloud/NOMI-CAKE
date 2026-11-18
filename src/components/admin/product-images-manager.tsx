@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { deleteProductImage, reorderProductImages, uploadProductImage } from "@/lib/admin/products-actions";
+import { compressImage } from "@/lib/client/compress-image";
 import type { ProductImageRow } from "@/types/database";
 
 export function ProductImagesManager({ productId, images }: { productId: string; images: ProductImageRow[] }) {
@@ -16,14 +17,19 @@ export function ProductImagesManager({ productId, images }: { productId: string;
   async function onFiles(files: FileList | null) {
     if (!files?.length) return;
     setUploading(true);
-    for (const file of Array.from(files)) {
-      const fd = new FormData();
-      fd.append("image", file);
-      const r = await uploadProductImage(productId, fd);
-      if (!r.ok) toast.error(r.error);
+    try {
+      for (const file of Array.from(files)) {
+        const fd = new FormData();
+        fd.append("image", await compressImage(file));
+        const r = await uploadProductImage(productId, fd);
+        if (!r.ok) toast.error(`${file.name}: ${r.error}`);
+      }
+    } catch {
+      toast.error("ההעלאה נכשלה. נסי שוב או בחרי תמונה קטנה יותר.");
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
     }
-    setUploading(false);
-    if (inputRef.current) inputRef.current.value = "";
   }
 
   function move(i: number, dir: -1 | 1) {

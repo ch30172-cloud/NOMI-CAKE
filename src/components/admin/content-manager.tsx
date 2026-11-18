@@ -5,7 +5,9 @@ import { useRef, useState, useTransition } from "react";
 import { ArrowLeft, ArrowRight, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { ActionForm } from "@/components/admin/action-form";
+import { ImageFileInput } from "@/components/admin/image-file-input";
 import { SubmitButton } from "@/components/admin/submit-button";
+import { compressImage } from "@/lib/client/compress-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,13 +36,23 @@ export function ContentManager({ content, gallery }: { content: HomepageContentR
   async function upload(files: FileList | null) {
     if (!files?.length) return;
     setUploading(true);
-    const fd = new FormData();
-    for (const f of Array.from(files)) fd.append("images", f);
-    const r = await addGalleryImages(fd);
-    setUploading(false);
-    if (fileRef.current) fileRef.current.value = "";
-    if (!r.ok) toast.error(r.error);
-    else toast.success(r.message);
+    let added = 0;
+    try {
+      // One request per photo, each shrunk first, so no request exceeds the size limit.
+      for (const f of Array.from(files)) {
+        const fd = new FormData();
+        fd.append("images", await compressImage(f));
+        const r = await addGalleryImages(fd);
+        if (!r.ok) toast.error(`${f.name}: ${r.error}`);
+        else added += 1;
+      }
+      if (added) toast.success(`${added} תמונות נוספו לגלריה`);
+    } catch {
+      toast.error("ההעלאה נכשלה. נסי שוב או בחרי תמונה קטנה יותר.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   }
 
   return (
@@ -61,7 +73,7 @@ export function ContentManager({ content, gallery }: { content: HomepageContentR
                         <Image src={content.hero_image_url} alt="" fill className="object-cover" sizes="400px" unoptimized />
                       </div>
                     )}
-                    <Input type="file" name="hero_image" accept="image/*" className="mt-2" />
+                    <ImageFileInput name="hero_image" className="mt-2" />
                   </div>
                   <div>
                     <Label>תמונה לאזור ״קצת על העסק״</Label>
@@ -70,7 +82,7 @@ export function ContentManager({ content, gallery }: { content: HomepageContentR
                         <Image src={content.about_image_url} alt="" fill className="object-cover" sizes="400px" unoptimized />
                       </div>
                     )}
-                    <Input type="file" name="about_image" accept="image/*" className="mt-2" />
+                    <ImageFileInput name="about_image" className="mt-2" />
                   </div>
                 </div>
                 <div>

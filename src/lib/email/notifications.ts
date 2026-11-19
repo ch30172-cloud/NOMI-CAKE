@@ -110,7 +110,8 @@ async function buildEmail(type: string, orderId: string | null, businessName: st
   if (type === "order_confirmed" && orderId) {
     const { data: order } = await admin.from("orders").select("order_number, customer_name, locale, fulfillment").eq("id", orderId).single();
     if (!order) throw new Error("order not found");
-    const text = buildStatusMessage("confirmed", order.order_number, order.customer_name, order.locale, order.fulfillment) + `\n\n${businessName}`;
+    const { data: biz } = await admin.from("business_settings").select("whatsapp_phone").eq("id", 1).single();
+    const text = buildStatusMessage("confirmed", order.order_number, order.customer_name, order.locale, order.fulfillment, biz?.whatsapp_phone) + `\n\n${businessName}`;
     const dir = order.locale === "he" ? "rtl" : "ltr";
     const html = `<div dir="${dir}" style="font-family:Arial,sans-serif;line-height:1.7;color:#49343c;font-size:16px"><p style="white-space:pre-wrap;margin:0">${escapeHtml(text)}</p></div>`;
     const subject = order.locale === "he" ? `הזמנתך מספר ${order.order_number} התקבלה בהצלחה – ${businessName}` : `Your order no. ${order.order_number} was received – ${businessName}`;

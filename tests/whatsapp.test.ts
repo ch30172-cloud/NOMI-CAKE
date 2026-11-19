@@ -72,6 +72,12 @@ describe("buildOrderMessage", () => {
     expect(buildStatusMessage("confirmed", 7, "Dana", "en", "delivery")).toContain("cash to the courier, bank transfer or Bit");
   });
 
+  it("adds the business number for Bit when it is set", () => {
+    expect(buildStatusMessage("confirmed", 1005, "דנה", "he", "delivery", "+972501234567")).toContain("בביט למספר 050-123-4567");
+    expect(buildStatusMessage("confirmed", 7, "Dana", "en", "pickup", "+972501234567")).toContain("Bit to 050-123-4567");
+    expect(buildStatusMessage("confirmed", 7, "Dana", "he", "pickup", null)).toContain("או בביט.");
+  });
+
   it("status messages mention the order number and name", () => {
     expect(buildStatusMessage("ready", 7, "Dana", "en")).toContain("#7");
     expect(buildStatusMessage("confirmed", 7, "דנה", "he")).toContain("דנה");

@@ -1,5 +1,5 @@
 import { formatMoney } from "@/lib/pricing/money";
-import { toWhatsAppDigits } from "./phone";
+import { formatPhoneForDisplay, toWhatsAppDigits } from "./phone";
 import type { FulfillmentType, OrderStatus } from "@/types/database";
 
 export interface WhatsAppOrderItem {
@@ -117,13 +117,13 @@ export function buildWhatsAppLink(phoneE164: string, message: string): string {
   return `https://wa.me/${toWhatsAppDigits(phoneE164)}?text=${encodeURIComponent(message)}`;
 }
 
-type StatusMsg = (n: number, name: string, fulfillment: FulfillmentType) => string;
+type StatusMsg = (n: number, name: string, fulfillment: FulfillmentType, bitPhone?: string) => string;
 
 const STATUS_MESSAGES: Record<"he" | "en", Record<OrderStatus, StatusMsg>> = {
   he: {
     pending: (n, name) => `שלום ${name}, קיבלנו את הזמנה #${n} ונחזור אלייך בהקדם לאישור. תודה!`,
-    confirmed: (n, name, f) =>
-      `שלום ${name},\nהזמנתך (מספר ${n}) התקבלה בהצלחה 🎂\nלתשלום: במזומן ${f === "delivery" ? "לשליח" : "באיסוף"}, בהעברה בנקאית או בביט.\nתודה!`,
+    confirmed: (n, name, f, bit) =>
+      `שלום ${name},\nהזמנתך (מספר ${n}) התקבלה בהצלחה 🎂\nלתשלום: במזומן ${f === "delivery" ? "לשליח" : "באיסוף"}, בהעברה בנקאית או בביט${bit ? ` למספר ${bit}` : ""}.\nתודה!`,
     in_preparation: (n, name) => `שלום ${name}, הזמנה #${n} בהכנה 👩‍🍳`,
     ready: (n, name) => `שלום ${name}, הזמנה #${n} מוכנה! ניתן לאסוף / המשלוח בדרך.`,
     completed: (n, name) => `שלום ${name}, תודה על הזמנה #${n}! נשמח לשמוע איך היה 💗`,
@@ -131,8 +131,8 @@ const STATUS_MESSAGES: Record<"he" | "en", Record<OrderStatus, StatusMsg>> = {
   },
   en: {
     pending: (n, name) => `Hi ${name}, we received order #${n} and will get back to you shortly to confirm. Thank you!`,
-    confirmed: (n, name, f) =>
-      `Hi ${name},\nYour order (no. ${n}) was received successfully 🎂\nPayment: cash ${f === "delivery" ? "to the courier" : "at pickup"}, bank transfer or Bit.\nThank you!`,
+    confirmed: (n, name, f, bit) =>
+      `Hi ${name},\nYour order (no. ${n}) was received successfully 🎂\nPayment: cash ${f === "delivery" ? "to the courier" : "at pickup"}, bank transfer or Bit${bit ? ` to ${bit}` : ""}.\nThank you!`,
     in_preparation: (n, name) => `Hi ${name}, order #${n} is being prepared 👩‍🍳`,
     ready: (n, name) => `Hi ${name}, order #${n} is ready! Pickup is available / delivery is on its way.`,
     completed: (n, name) => `Hi ${name}, thank you for order #${n}! We'd love to hear how it was 💗`,
@@ -145,7 +145,10 @@ export function buildStatusMessage(
   orderNumber: number,
   customerName: string,
   locale: "he" | "en",
-  fulfillment: FulfillmentType = "pickup"
+  fulfillment: FulfillmentType = "pickup",
+  /** Business WhatsApp number (E.164); the same number is used for Bit payments. */
+  bitPhoneE164?: string | null
 ): string {
-  return STATUS_MESSAGES[locale][status](orderNumber, customerName, fulfillment);
+  const bit = bitPhoneE164 ? formatPhoneForDisplay(bitPhoneE164) : undefined;
+  return STATUS_MESSAGES[locale][status](orderNumber, customerName, fulfillment, bit);
 }

@@ -28,8 +28,10 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ lo
   const paid = (payments ?? []).filter((p) => p.kind === "payment").reduce((s, p) => s + p.amount_agorot, 0);
   const refunded = (payments ?? []).filter((p) => p.kind === "refund").reduce((s, p) => s + p.amount_agorot, 0);
   const balance = order.total_agorot - paid + refunded;
-  const waCustomer = buildWhatsAppLink(order.customer_phone, buildStatusMessage(order.status, order.order_number, order.customer_name, order.locale, order.fulfillment));
-  const waConfirmed = buildWhatsAppLink(order.customer_phone, buildStatusMessage("confirmed", order.order_number, order.customer_name, order.locale, order.fulfillment));
+  const { data: biz } = await supabase.from("business_settings").select("whatsapp_phone").eq("id", 1).single();
+  const bitPhone = biz?.whatsapp_phone ?? null;
+  const waCustomer = buildWhatsAppLink(order.customer_phone, buildStatusMessage(order.status, order.order_number, order.customer_name, order.locale, order.fulfillment, bitPhone));
+  const waConfirmed = buildWhatsAppLink(order.customer_phone, buildStatusMessage("confirmed", order.order_number, order.customer_name, order.locale, order.fulfillment, bitPhone));
 
   return (
     <div className="space-y-6">

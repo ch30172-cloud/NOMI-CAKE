@@ -5,6 +5,7 @@ import { z } from "zod";
 import { assertAdmin } from "@/lib/auth/admin";
 import { logAudit } from "@/lib/audit/log";
 import { ilsToAgorot } from "@/lib/pricing/money";
+import { sendPendingNotifications } from "@/lib/email/notifications";
 import { createClient } from "@/lib/supabase/server";
 import type { OrderStatus } from "@/types/database";
 import { errorMessage, fail, ok, type ActionResult } from "./action-result";
@@ -22,7 +23,7 @@ export async function updateOrderStatus(orderId: string, to: OrderStatus, note?:
   try {
     const admin = await assertAdmin();
     const supabase = await createClient();
-    const { data: order } = await supabase.from("orders").select("status").eq("id", orderId).single();
+    const { data: order } = await supabase.from("orders").select("status, customer_email").eq("id", orderId).single();
     if (!order) return fail("ההזמנה לא נמצאה");
     if (!ALLOWED_TRANSITIONS[order.status].includes(to)) return fail(`לא ניתן לעבור מ"${order.status}" ל"${to}"`);
     const { error } = await supabase.from("orders").update({ status: to }).eq("id", orderId);
@@ -31,6 +32,11 @@ export async function updateOrderStatus(orderId: string, to: OrderStatus, note?:
       await supabase.from("order_status_history").update({ note }).eq("order_id", orderId).eq("to_status", to).order("created_at", { ascending: false }).limit(1);
     }
     await logAudit("order.status", "orders", orderId, { status: order.status }, { status: to, by: admin.email });
+    // Confirmation email to the customer (queued; sent now if email is configured, retried by the cron otherwise).
+    if (to === "confirmed" && order.customer_email) {
+      await supabase.from("notifications").insert({ type: "order_confirmed", channel: "email", order_id: orderId, payload: { to: order.customer_email } });
+      sendPendingNotifications().catch((e) => console.error("confirmation email failed", e));
+    }
     revalidatePath("/[locale]/admin", "layout");
     return ok("הסטטוס עודכן");
   } catch (e) {

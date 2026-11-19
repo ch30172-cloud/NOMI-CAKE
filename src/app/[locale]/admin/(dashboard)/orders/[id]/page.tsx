@@ -28,7 +28,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ lo
   const paid = (payments ?? []).filter((p) => p.kind === "payment").reduce((s, p) => s + p.amount_agorot, 0);
   const refunded = (payments ?? []).filter((p) => p.kind === "refund").reduce((s, p) => s + p.amount_agorot, 0);
   const balance = order.total_agorot - paid + refunded;
-  const waCustomer = buildWhatsAppLink(order.customer_phone, buildStatusMessage(order.status, order.order_number, order.customer_name, order.locale));
+  const waCustomer = buildWhatsAppLink(order.customer_phone, buildStatusMessage(order.status, order.order_number, order.customer_name, order.locale, order.fulfillment));
+  const waConfirmed = buildWhatsAppLink(order.customer_phone, buildStatusMessage("confirmed", order.order_number, order.customer_name, order.locale, order.fulfillment));
 
   return (
     <div className="space-y-6">
@@ -132,7 +133,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ lo
             <CardTitle className="text-base">סטטוס</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <OrderStatusActions orderId={order.id} status={order.status} />
+            <OrderStatusActions orderId={order.id} status={order.status} confirmWhatsAppLink={waConfirmed} hasEmail={Boolean(order.customer_email)} />
             <ol className="space-y-1 text-xs text-muted-foreground">
               {(history ?? []).map((h) => (
                 <li key={h.id}>

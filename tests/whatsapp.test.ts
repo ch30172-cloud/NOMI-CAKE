@@ -63,6 +63,15 @@ describe("buildOrderMessage", () => {
     expect(decodeURIComponent(link.split("text=")[1])).toBe("שלום עולם");
   });
 
+  it("confirmed message says the order was received and lists payment options", () => {
+    const delivery = buildStatusMessage("confirmed", 1005, "דנה", "he", "delivery");
+    expect(delivery).toContain("הזמנתך (מספר 1005) התקבלה בהצלחה");
+    expect(delivery).toContain("במזומן לשליח");
+    expect(delivery).toContain("בהעברה בנקאית או בביט");
+    expect(buildStatusMessage("confirmed", 1005, "דנה", "he", "pickup")).toContain("במזומן באיסוף");
+    expect(buildStatusMessage("confirmed", 7, "Dana", "en", "delivery")).toContain("cash to the courier, bank transfer or Bit");
+  });
+
   it("status messages mention the order number and name", () => {
     expect(buildStatusMessage("ready", 7, "Dana", "en")).toContain("#7");
     expect(buildStatusMessage("confirmed", 7, "דנה", "he")).toContain("דנה");

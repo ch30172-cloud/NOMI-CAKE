@@ -2,6 +2,7 @@ import "server-only";
 import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatMoney } from "@/lib/pricing/money";
+import { buildStatusMessage } from "@/lib/whatsapp/message";
 
 const MAX_ATTEMPTS = 6;
 
@@ -25,8 +26,7 @@ export async function sendPendingNotifications(limit = 10): Promise<{ sent: numb
   const admin = createAdminClient();
 
   const { data: settings } = await admin.from("business_settings").select("business_name, business_email").eq("id", 1).maybeSingle();
-  const to = settings?.business_email;
-  if (!apiKey || !from || !to) return { sent: 0, failed: 0, skipped: limit };
+  if (!apiKey || !from) return { sent: 0, failed: 0, skipped: limit };
 
   const { data: pending } = await admin
     .from("notifications")
@@ -52,6 +52,14 @@ export async function sendPendingNotifications(limit = 10): Promise<{ sent: numb
       .select("id")
       .maybeSingle();
     if (!claimed) continue; // someone else took it
+
+    // Customer emails carry their recipient in the payload; owner alerts go to the business email.
+    const payloadTo = (n.payload as { to?: string } | null)?.to;
+    const to = payloadTo || settings?.business_email;
+    if (!to) {
+      await admin.from("notifications").update({ attempts: n.attempts, last_error: "no recipient (set the business email in Settings)" }).eq("id", n.id);
+      continue;
+    }
 
     try {
       const { subject, html, text } = await buildEmail(n.type, n.order_id, settings?.business_name ?? "Nomi Nebentzhal");
@@ -98,6 +106,15 @@ async function buildEmail(type: string, orderId: string | null, businessName: st
       .join("\n");
     const html = `<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.6;color:#49343c"><h2 style="color:#b76e86">${escapeHtml(businessName)} – הזמנה חדשה #${order.order_number}</h2><pre style="white-space:pre-wrap;font-family:inherit">${escapeHtml(text)}</pre></div>`;
     return { subject: `הזמנה חדשה #${order.order_number} – ${order.customer_name}`, html, text };
+  }
+  if (type === "order_confirmed" && orderId) {
+    const { data: order } = await admin.from("orders").select("order_number, customer_name, locale, fulfillment").eq("id", orderId).single();
+    if (!order) throw new Error("order not found");
+    const text = buildStatusMessage("confirmed", order.order_number, order.customer_name, order.locale, order.fulfillment) + `\n\n${businessName}`;
+    const dir = order.locale === "he" ? "rtl" : "ltr";
+    const html = `<div dir="${dir}" style="font-family:Arial,sans-serif;line-height:1.7;color:#49343c;font-size:16px"><p style="white-space:pre-wrap;margin:0">${escapeHtml(text)}</p></div>`;
+    const subject = order.locale === "he" ? `הזמנתך מספר ${order.order_number} התקבלה בהצלחה – ${businessName}` : `Your order no. ${order.order_number} was received – ${businessName}`;
+    return { subject, html, text };
   }
   throw new Error(`unknown notification type ${type}`);
 }

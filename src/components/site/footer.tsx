@@ -71,6 +71,12 @@ export async function SiteFooter({ settings, logoUrl }: { settings: BusinessSett
           </p>
         </div>
       </div>
+      <p className="border-t border-rose/15 py-3 text-center text-[11px] text-muted-foreground">
+        {t("builtBy")} ·{" "}
+        <a href="tel:+972548430172" dir="ltr" className="hover:text-accent">
+          054-843-0172
+        </a>
+      </p>
     </footer>
   );
 }

@@ -20,6 +20,7 @@ import { createOrderAction, fetchAvailability, fetchSlots, type DayAvailability 
 import { formatMoney } from "@/lib/pricing/money";
 import { normalizePhone } from "@/lib/whatsapp/phone";
 import { cn } from "@/lib/utils";
+import { Turnstile } from "./turnstile";
 import type { FulfillmentType } from "@/types/database";
 
 interface City {
@@ -61,6 +62,8 @@ export function CheckoutForm({ cities, pickupAddress }: { cities: City[]; pickup
   const router = useRouter();
   const { items, couponCode, hydrated } = useCart();
   const [idempotencyKey] = useState(newIdempotencyKey);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaReset, setCaptchaReset] = useState(0);
   const [days, setDays] = useState<DayAvailability[]>([]);
   const [minLeadDays, setMinLeadDays] = useState(0);
   const [slots, setSlots] = useState<string[]>([]);
@@ -129,9 +132,10 @@ export function CheckoutForm({ cities, pickupAddress }: { cities: City[]; pickup
         couponCode: couponCode ?? "",
         website: values.website,
         items: items.map((i) => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity, notes: i.notes })),
-      });
+      }, captchaToken);
       if (!result.ok) {
         setServerError(result.error);
+        setCaptchaReset((n) => n + 1);
         toast.error(t(`errors.${isKnownError(result.error) ? result.error : "generic"}`));
         setSubmitting(false);
         return;
@@ -321,8 +325,9 @@ export function CheckoutForm({ cities, pickupAddress }: { cities: City[]; pickup
           </ul>
         )}
         {quote && <CartSummary quote={quote} showDelivery={fulfillment === "delivery"} />}
+        <Turnstile onToken={setCaptchaToken} locale={locale} resetKey={captchaReset} />
         {serverError && <p className="rounded-lg bg-destructive/10 p-2 text-sm text-destructive">{t(`errors.${isKnownError(serverError) ? serverError : "generic"}`)}</p>}
-        <Button type="submit" size="lg" className="w-full rounded-full" disabled={submitting || quoteLoading || !quote || quote.lines.some((l) => l.error)}>
+        <Button type="submit" size="lg" className="w-full rounded-full" disabled={submitting || (Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) && !captchaToken) || quoteLoading || !quote || quote.lines.some((l) => l.error)}>
           {submitting ? t("submitting") : t("submit")}
         </Button>
         <p className="text-xs text-muted-foreground">{t("terms")}</p>
@@ -334,7 +339,7 @@ export function CheckoutForm({ cities, pickupAddress }: { cities: City[]; pickup
 const KNOWN = new Set([
   "name", "phone", "email", "address", "city", "date", "time", "emptyCart", "date_too_soon", "date_too_far", "date_blocked", "date_closed", "date_full",
   "time_outside_hours", "time_blocked", "time_not_aligned", "city_unavailable", "product_unavailable", "coupon_invalid", "coupon_expired",
-  "coupon_exhausted", "coupon_min_order", "rate_limited", "not_configured", "generic",
+  "coupon_exhausted", "coupon_min_order", "rate_limited", "captcha", "not_configured", "generic",
 ]);
 function isKnownError(code: string): code is "generic" {
   return KNOWN.has(code);

@@ -153,6 +153,7 @@
       "coupon_exhausted": "The coupon has been fully used.",
       "coupon_min_order": "The order does not meet the coupon minimum.",
       "rate_limited": "Too many attempts. Please try again in a few minutes.",
+      "captcha": "Verification failed. Please tick the \"I am not a robot\" box again.",
       "not_configured": "The system is not connected to the database yet.",
       "generic": "Something went wrong while sending the order. Please try again."
     }

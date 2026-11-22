@@ -7,6 +7,7 @@ import { computeCartTotals, priceLine, type PricingCoupon } from "@/lib/pricing/
 import { generateSlots } from "@/lib/availability/slots";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { sendPendingNotifications } from "@/lib/email/notifications";
+import { verifyCaptcha } from "@/lib/captcha";
 import { checkoutSchema, type CheckoutInput } from "./schemas";
 import type { FulfillmentType } from "@/types/database";
 
@@ -87,7 +88,9 @@ export async function quoteCart(input: {
 
   let coupon: CartQuote["coupon"] = null;
   let pricingCoupon: PricingCoupon | null = null;
-  if (input.couponCode) {
+  if (input.couponCode && !rateLimit(`coupon:${await clientKey()}`, 30, 10 * 60 * 1000)) {
+    coupon = { code: input.couponCode, valid: false, reason: "generic" };
+  } else if (input.couponCode) {
     const { data } = await supabase.rpc("validate_coupon", { p_code: input.couponCode, p_subtotal_agorot: subtotal });
     const v = (data ?? {}) as Record<string, unknown>;
     if (v.valid === true) {
@@ -163,10 +166,14 @@ export type CreateOrderResult =
 const KNOWN_ERRORS = new Set([
   "date_too_soon", "date_too_far", "date_blocked", "date_closed", "date_full", "time_outside_hours", "time_blocked", "time_not_aligned",
   "city_unavailable", "address_required", "product_not_found", "product_unavailable", "quantity_below_min", "quantity_above_max",
-  "size_required", "no_tier", "coupon_invalid", "coupon_expired", "coupon_exhausted", "coupon_min_order", "empty_order",
+  "size_required", "no_tier", "coupon_invalid", "coupon_expired", "coupon_exhausted", "coupon_min_order", "empty_order", "captcha",
 ]);
 
-export async function createOrderAction(raw: CheckoutInput): Promise<CreateOrderResult> {
+/** Anti-spam limits checked in the database, so they hold across all server instances. */
+const MAX_PENDING_PER_PHONE_24H = 3;
+const MAX_ORDERS_PER_HOUR_SITEWIDE = 30;
+
+export async function createOrderAction(raw: CheckoutInput, captchaToken?: string): Promise<CreateOrderResult> {
   if (!isSupabaseConfigured() || !process.env.SUPABASE_SERVICE_ROLE_KEY) return { ok: false, error: "not_configured" };
 
   const ip = await clientKey();
@@ -179,7 +186,19 @@ export async function createOrderAction(raw: CheckoutInput): Promise<CreateOrder
   }
   const d = parsed.data;
 
+  if (!(await verifyCaptcha(captchaToken, ip))) return { ok: false, error: "captcha" };
+
   const admin = createAdminClient();
+  const dayAgo = new Date(Date.now() - 24 * 3600_000).toISOString();
+  const hourAgo = new Date(Date.now() - 3600_000).toISOString();
+  const [{ count: phoneCount }, { count: hourCount }] = await Promise.all([
+    admin.from("orders").select("id", { count: "exact", head: true }).eq("customer_phone", d.customer.phone).eq("status", "pending").gte("created_at", dayAgo),
+    admin.from("orders").select("id", { count: "exact", head: true }).gte("created_at", hourAgo),
+  ]);
+  if ((phoneCount ?? 0) >= MAX_PENDING_PER_PHONE_24H || (hourCount ?? 0) >= MAX_ORDERS_PER_HOUR_SITEWIDE) {
+    return { ok: false, error: "rate_limited" };
+  }
+
   const { data, error } = await admin.rpc("create_order", {
     payload: {
       idempotency_key: d.idempotencyKey,

@@ -10,7 +10,6 @@ import {
   getBusinessSettings,
   getCategories,
   getDeliveryCities,
-  getGallery,
   getHomepageContent,
   getProducts,
   localized,
@@ -24,12 +23,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   setRequestLocale(locale);
   const t = await getTranslations("home");
   const currentLocale = await getLocale();
-  const [settings, content, categories, featured, gallery, cities] = await Promise.all([
+  const [settings, content, categories, featured, cities] = await Promise.all([
     getBusinessSettings(),
     getHomepageContent(),
     getCategories(),
     getProducts({ featuredOnly: true }),
-    getGallery(),
     getDeliveryCities(),
   ]);
   const logoUrl = resolveLogoUrl(settings);
@@ -108,24 +106,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             ))}
           </div>
         )}
-      </section>
-
-      {/* Gallery */}
-      <section className="bg-cream py-12">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="mb-6 text-center text-3xl">{t("galleryTitle")}</h2>
-          {gallery.length === 0 ? (
-            <p className="text-center text-muted-foreground">{t("noGallery")}</p>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-              {gallery.map((g) => (
-                <div key={g.id} className="relative aspect-square overflow-hidden rounded-2xl">
-                  <Image src={g.url} alt={localized(g, "alt", currentLocale)} fill className="object-cover transition-transform duration-500 hover:scale-105" sizes="(max-width: 640px) 50vw, 25vw" unoptimized={!g.url.startsWith("/")} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </section>
 
       {/* About */}

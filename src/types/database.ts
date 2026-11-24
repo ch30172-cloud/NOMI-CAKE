@@ -295,6 +295,8 @@ export type BusinessSettingsRow = {
   opening_hours_en: string | null;
   delivery_info_he: string | null;
   delivery_info_en: string | null;
+  /** Items subtotal from which delivery is free; null = never free. */
+  free_delivery_min_agorot: number | null;
   announcement_he: string | null;
   announcement_en: string | null;
   announcement_active: boolean;

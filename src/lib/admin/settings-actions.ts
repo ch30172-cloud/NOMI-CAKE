@@ -22,6 +22,7 @@ const schema = z.object({
   opening_hours_en: text(1000),
   delivery_info_he: text(1000),
   delivery_info_en: text(1000),
+  free_delivery_min_ils: z.union([z.literal(""), z.coerce.number().min(0, "סכום לא תקין").max(100000, "סכום לא תקין")]).default(""),
   announcement_he: text(300),
   announcement_en: text(300),
   announcement_active: z.coerce.boolean().default(false),
@@ -53,13 +54,20 @@ export async function saveSettings(_prev: ActionResult | null, formData: FormDat
       opening_hours_en: d.opening_hours_en || null,
       delivery_info_he: d.delivery_info_he || null,
       delivery_info_en: d.delivery_info_en || null,
+      free_delivery_min_agorot: d.free_delivery_min_ils === "" || d.free_delivery_min_ils === 0 ? null : Math.round(d.free_delivery_min_ils * 100),
       announcement_he: d.announcement_he || null,
       announcement_en: d.announcement_en || null,
       announcement_active: d.announcement_active,
       social_links: { instagram: d.instagram || undefined, facebook: d.facebook || undefined, tiktok: d.tiktok || undefined },
     };
     const supabase = await createClient();
-    const { error } = await supabase.from("business_settings").update(values).eq("id", 1);
+    let { error } = await supabase.from("business_settings").update(values).eq("id", 1);
+    if (error?.message.includes("free_delivery_min_agorot")) {
+      // Migration 0008 not run yet: save everything else.
+      const { free_delivery_min_agorot: _skip, ...rest } = values;
+      void _skip;
+      ({ error } = await supabase.from("business_settings").update(rest).eq("id", 1));
+    }
     if (error) return fail(error.message);
     await logAudit("settings.update", "business_settings", "1", null, values);
     revalidatePath("/[locale]", "layout");

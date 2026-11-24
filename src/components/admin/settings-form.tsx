@@ -71,6 +71,11 @@ export function SettingsForm({ settings }: { settings: BusinessSettingsRow }) {
                 <Label htmlFor="delivery_info_en">מידע על משלוחים (אנגלית)</Label>
                 <Textarea id="delivery_info_en" name="delivery_info_en" rows={3} dir="ltr" defaultValue={settings.delivery_info_en ?? ""} />
               </div>
+              <div>
+                <Label htmlFor="free_delivery_min_ils">משלוח חינם בהזמנה מעל (₪)</Label>
+                <Input id="free_delivery_min_ils" name="free_delivery_min_ils" type="number" min={0} step={1} dir="ltr" placeholder="ריק = אין משלוח חינם" defaultValue={settings.free_delivery_min_agorot != null ? settings.free_delivery_min_agorot / 100 : ""} />
+                <p className="mt-1 text-xs text-muted-foreground">לפי סכום המוצרים לפני הנחת קופון. השאירי ריק כדי לבטל.</p>
+              </div>
             </CardContent>
           </Card>
 

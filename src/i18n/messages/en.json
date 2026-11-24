@@ -93,7 +93,8 @@
       "min_order": "This coupon requires a minimum order of {min}.",
       "generic": "The coupon could not be applied."
     },
-    "itemUnavailable": "This item is no longer available and was removed from the cart."
+    "itemUnavailable": "This item is no longer available and was removed from the cart.",
+    "freeDelivery": "Free"
   },
   "checkout": {
     "title": "Checkout",

@@ -24,7 +24,7 @@ export function CartSummary({ quote, showDelivery }: { quote: CartQuote; showDel
       {showDelivery && (
         <div className="flex justify-between">
           <dt>{t("delivery")}</dt>
-          <dd>{formatMoney(quote.deliveryFeeAgorot, locale)}</dd>
+          <dd>{quote.freeDelivery ? <span className="font-medium text-emerald-700">{t("freeDelivery")}</span> : formatMoney(quote.deliveryFeeAgorot, locale)}</dd>
         </div>
       )}
       <div className="flex justify-between border-t border-rose/20 pt-2 text-base font-semibold">

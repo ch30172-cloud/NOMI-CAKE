@@ -34,12 +34,13 @@ export interface CartQuote {
   subtotalAgorot: number;
   discountAgorot: number;
   deliveryFeeAgorot: number;
+  freeDelivery: boolean;
   totalAgorot: number;
   hasCustomPricing: boolean;
   coupon: { code: string; valid: boolean; reason: string | null; minOrderAgorot?: number } | null;
 }
 
-const EMPTY_QUOTE: CartQuote = { lines: [], subtotalAgorot: 0, discountAgorot: 0, deliveryFeeAgorot: 0, totalAgorot: 0, hasCustomPricing: false, coupon: null };
+const EMPTY_QUOTE: CartQuote = { lines: [], subtotalAgorot: 0, discountAgorot: 0, deliveryFeeAgorot: 0, freeDelivery: false, totalAgorot: 0, hasCustomPricing: false, coupon: null };
 
 /**
  * Prices the cart on the server from live DB data (anon client, RLS applies).
@@ -86,6 +87,17 @@ export async function quoteCart(input: {
   const validLines = lines.filter((l) => !l.error);
   const subtotal = validLines.reduce((s, l) => s + (l.lineTotalAgorot ?? 0), 0);
 
+  // Same rule as create_order(): free delivery once the items subtotal reaches the threshold.
+  let freeDelivery = false;
+  if (input.deliveryCityId) {
+    const { data: biz } = await supabase.from("business_settings").select("*").eq("id", 1).maybeSingle();
+    const min = biz?.free_delivery_min_agorot ?? null;
+    if (min && min > 0 && subtotal >= min) {
+      deliveryFee = 0;
+      freeDelivery = true;
+    }
+  }
+
   let coupon: CartQuote["coupon"] = null;
   let pricingCoupon: PricingCoupon | null = null;
   if (input.couponCode && !rateLimit(`coupon:${await clientKey()}`, 30, 10 * 60 * 1000)) {
@@ -121,7 +133,7 @@ export async function quoteCart(input: {
     deliveryFeeAgorot: deliveryFee,
   });
 
-  return { lines, ...{ subtotalAgorot: totals.subtotalAgorot, discountAgorot: totals.discountAgorot, deliveryFeeAgorot: totals.deliveryFeeAgorot, totalAgorot: totals.totalAgorot, hasCustomPricing: totals.hasCustomPricing }, coupon };
+  return { lines, ...{ subtotalAgorot: totals.subtotalAgorot, discountAgorot: totals.discountAgorot, deliveryFeeAgorot: totals.deliveryFeeAgorot, freeDelivery, totalAgorot: totals.totalAgorot, hasCustomPricing: totals.hasCustomPricing }, coupon };
 }
 
 export interface DayAvailability {

@@ -6,7 +6,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { computeCartTotals, priceLine, type PricingCoupon } from "@/lib/pricing/pricing";
 import { generateSlots } from "@/lib/availability/slots";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
-import { sendPendingNotifications } from "@/lib/email/notifications";
+import { sendPendingNotificationsSoon } from "@/lib/email/notifications";
 import { verifyCaptcha } from "@/lib/captcha";
 import { checkoutSchema, type CheckoutInput } from "./schemas";
 import type { FulfillmentType } from "@/types/database";
@@ -237,7 +237,7 @@ export async function createOrderAction(raw: CheckoutInput, captchaToken?: strin
   const result = data as { id: string; order_number: number; public_token: string; duplicate: boolean };
 
   // Best-effort immediate email; the cron route retries anything that fails.
-  sendPendingNotifications().catch((e) => console.error("notification send failed", e));
+  await sendPendingNotificationsSoon();
 
   return { ok: true, orderId: result.id, orderNumber: result.order_number, token: result.public_token, duplicate: result.duplicate };
 }

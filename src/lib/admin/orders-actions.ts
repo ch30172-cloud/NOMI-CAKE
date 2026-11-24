@@ -5,7 +5,7 @@ import { z } from "zod";
 import { assertAdmin } from "@/lib/auth/admin";
 import { logAudit } from "@/lib/audit/log";
 import { ilsToAgorot } from "@/lib/pricing/money";
-import { sendPendingNotifications } from "@/lib/email/notifications";
+import { sendPendingNotificationsSoon } from "@/lib/email/notifications";
 import { createClient } from "@/lib/supabase/server";
 import type { OrderStatus } from "@/types/database";
 import { errorMessage, fail, ok, type ActionResult } from "./action-result";
@@ -35,7 +35,7 @@ export async function updateOrderStatus(orderId: string, to: OrderStatus, note?:
     // Confirmation email to the customer (queued; sent now if email is configured, retried by the cron otherwise).
     if (to === "confirmed" && order.customer_email) {
       await supabase.from("notifications").insert({ type: "order_confirmed", channel: "email", order_id: orderId, payload: { to: order.customer_email } });
-      sendPendingNotifications().catch((e) => console.error("confirmation email failed", e));
+      await sendPendingNotificationsSoon();
     }
     revalidatePath("/[locale]/admin", "layout");
     return ok("הסטטוס עודכן");

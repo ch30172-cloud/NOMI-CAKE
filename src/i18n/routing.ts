@@ -5,7 +5,9 @@ export type Locale = (typeof locales)[number];
 
 export const routing = defineRouting({
   locales,
-  defaultLocale: "he",
+  defaultLocale: "en",
+  // Always open in English; visitors switch to Hebrew with the language button.
+  localeDetection: false,
   localePrefix: "always",
 });
 

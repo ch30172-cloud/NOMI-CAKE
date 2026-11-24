@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: { default: name, template: `%s | ${name}` },
     description: settings?.tagline ?? t("tagline"),
     alternates: {
-      languages: { he: "/he", en: "/en", "x-default": "/he" },
+      languages: { he: "/he", en: "/en", "x-default": "/en" },
     },
     openGraph: {
       siteName: name,

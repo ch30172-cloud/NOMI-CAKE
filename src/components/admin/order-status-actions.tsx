@@ -36,7 +36,16 @@ export function OrderStatusActions({
     // then point it at the message once the status change succeeded.
     const waTab = s === "confirmed" ? window.open("about:blank", "_blank") : null;
     start(async () => {
-      const r = await updateOrderStatus(orderId, s);
+      let r: Awaited<ReturnType<typeof updateOrderStatus>>;
+      try {
+        r = await updateOrderStatus(orderId, s);
+      } catch (e) {
+        // Usually a page left open from before the latest site update.
+        console.error(e);
+        waTab?.close();
+        toast.error("האתר התעדכן בזמן שהדף היה פתוח. רענני את הדף (F5) ונסי שוב.", { duration: 10000 });
+        return;
+      }
       if (!r.ok) {
         waTab?.close();
         toast.error(r.error);

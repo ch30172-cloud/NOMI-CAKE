@@ -42,7 +42,8 @@ export function Logo({
           sizes={`${Math.round(height * 3.2)}px`}
           className="object-contain object-center"
           priority={priority}
-          unoptimized={!src.startsWith("/")}
+          // Small file: serve it as-is (no resizing service, no stale resized copies in browser caches).
+          unoptimized
         />
       </span>
       {withText && (

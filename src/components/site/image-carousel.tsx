@@ -65,7 +65,7 @@ export function ImageCarousel({
 
   if (count === 0) {
     return (
-      <div className={cn("flex h-full w-full items-center justify-center bg-blush/40", variant === "full" ? "text-7xl" : "text-5xl")} aria-hidden>
+      <div className={cn("flex w-full items-center justify-center bg-blush/40", variant === "full" ? "aspect-square rounded-3xl text-7xl" : "aspect-[4/3] text-5xl")} aria-hidden>
         🎂
       </div>
     );
@@ -85,6 +85,9 @@ export function ImageCarousel({
         fill
         sizes={sizes}
         priority={priority && i === 0}
+        // Browsers sometimes never start "lazy" images inside a sideways scroller (especially RTL),
+        // so the visible photo and its neighbours load eagerly; the rest once the visitor swipes near them.
+        loading={priority && i === 0 ? undefined : Math.abs(i - index) <= 1 ? "eager" : "lazy"}
         className={cn("object-cover", variant === "card" && "transition-transform duration-500 group-hover:scale-[1.03]")}
         unoptimized={!img.url.startsWith("/")}
         draggable={false}

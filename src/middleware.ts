@@ -12,5 +12,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|branding|.*\..*).*)"],
+  // "\\." = a literal dot, so only real files (favicon.ico, images) are skipped.
+  matcher: ["/((?!api|_next|_vercel|branding|.*\\..*).*)"],
 };
